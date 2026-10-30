@@ -3,131 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud File Uploader</title>
+    <title>My Cloud Drive</title>
     <style>
-        body {
-            background-color: #0f0f0f;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .upload-card {
-            background-color: #1a1a1a;
-            padding: 35px;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-            text-align: center;
-            max-width: 420px;
-            width: 90%;
-            border: 1px solid #2e2e2e;
-        }
-        h2 {
-            margin-top: 0;
-            font-size: 22px;
-        }
-        input[type="file"] {
-            margin: 20px 0;
-            padding: 10px;
-            background: #252525;
-            border-radius: 8px;
-            color: #ccc;
-            width: 90%;
-            border: 1px dashed #444;
-        }
-        .btn {
-            background-color: #3b82f6;
-            color: #ffffff;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.2s;
-        }
-        .btn:hover {
-            background-color: #2563eb;
-        }
-        #status {
-            margin-top: 18px;
-            font-size: 14px;
-            color: #a1a1aa;
-            word-break: break-all;
-        }
-        #preview {
-            margin-top: 15px;
-            max-width: 100%;
-            border-radius: 8px;
-            display: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #121212; color: #e0e0e0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background-color: #1e1e1e; padding: 20px; display: flex; flex-direction: column; border-right: 1px solid #2e2e2e; }
+        .logo { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .upload-btn { background-color: #3b82f6; color: white; border: none; padding: 12px 20px; border-radius: 24px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); transition: 0.2s; margin-bottom: 25px; }
+        .upload-btn:hover { background-color: #2563eb; }
+        .nav-item { padding: 10px 15px; border-radius: 8px; color: #b0b0b0; cursor: pointer; margin-bottom: 5px; font-size: 14px; }
+        .nav-item.active, .nav-item:hover { background-color: #2a2a2a; color: #fff; }
+        .settings-btn { margin-top: auto; background: #2a2a2a; color: #ccc; border: 1px solid #3e3e3e; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .settings-btn:hover { background: #333; color: #fff; }
+
+        /* Main Content */
+        .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .header { padding: 15px 30px; border-bottom: 1px solid #2e2e2e; display: flex; justify-content: space-between; align-items: center; background: #181818; }
+        .status-bar { font-size: 14px; color: #facc15; }
+        .content { padding: 30px; flex: 1; }
+        .section-title { font-size: 16px; margin-bottom: 20px; color: #a0a0a0; }
+
+        /* File Grid */
+        .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+        .file-card { background: #1e1e1e; border: 1px solid #2e2e2e; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.15s; }
+        .file-card:hover { transform: translateY(-3px); border-color: #444; }
+        .file-thumb { height: 130px; background: #252525; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .file-thumb img, .file-thumb video { width: 100%; height: 100%; object-fit: cover; }
+        .file-info { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .file-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+        .file-link { color: #60a5fa; text-decoration: none; font-size: 12px; }
+
+        /* One-Time API Setup Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal { background: #1e1e1e; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; border: 1px solid #333; }
+        .modal h3 { margin-bottom: 15px; font-size: 18px; }
+        .modal label { display: block; font-size: 12px; color: #aaa; margin-top: 12px; margin-bottom: 5px; }
+        .modal input { width: 100%; padding: 10px; background: #121212; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 14px; }
+        .modal-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .save-btn { background: #3b82f6; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <div class="upload-card">
-        <h2>Upload to Cloud Storage</h2>
-        <input type="file" id="fileInput" accept="image/*,video/*">
-        <button class="btn" onclick="uploadToCloudinary()">Upload File</button>
-        <p id="status">Select a photo or video to upload.</p>
-        <img id="preview" alt="Uploaded preview">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">☁️ Cloud Drive</div>
+        <input type="file" id="fileInput" style="display: none;" multiple onchange="handleFiles(this.files)">
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">+ New Upload</button>
+        <div class="nav-item active">📁 My Files</div>
+        <button class="settings-btn" onclick="openModal()">⚙️ Cloudinary API Setup</button>
+    </div>
+
+    <!-- Main Drive Area -->
+    <div class="main">
+        <div class="header">
+            <h3>My Drive</h3>
+            <div id="status" class="status-bar"></div>
+        </div>
+        <div class="content">
+            <div class="section-title">Uploaded Files</div>
+            <div id="fileGrid" class="file-grid"></div>
+        </div>
+    </div>
+
+    <!-- One-Time API Key Modal -->
+    <div id="apiModal" class="modal-overlay">
+        <div class="modal">
+            <h3>Cloudinary One-Time Setup</h3>
+            <label>Cloud Name</label>
+            <input type="text" id="cloudName" value="dmhwtzzqi">
+            <label>API Key</label>
+            <input type="text" id="apiKey" value="388174674157577">
+            <label>Unsigned Upload Preset Name</label>
+            <input type="text" id="uploadPreset" placeholder="e.g. ml_default or your preset name">
+            <div class="modal-actions">
+                <button class="save-btn" onclick="saveCredentials()">Save & Continue</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Your Cloudinary Configuration
-        const CLOUD_NAME = "dmhwtzzqi";
-        const API_KEY = "388174674157577";
-        const UPLOAD_PRESET = "YOUR_UPLOAD_PRESET_NAME"; // <-- Paste your Unsigned Upload Preset name here
+        // Load saved credentials & files on startup
+        window.onload = () => {
+            if (!localStorage.getItem('cloudinary_preset')) {
+                openModal();
+            }
+            renderFiles();
+        };
 
-        async function uploadToCloudinary() {
-            const fileInput = document.getElementById('fileInput');
-            const status = document.getElementById('status');
-            const preview = document.getElementById('preview');
+        function openModal() {
+            document.getElementById('cloudName').value = localStorage.getItem('cloudinary_cloud') || 'dmhwtzzqi';
+            document.getElementById('apiKey').value = localStorage.getItem('cloudinary_key') || '388174674157577';
+            document.getElementById('uploadPreset').value = localStorage.getItem('cloudinary_preset') || '';
+            document.getElementById('apiModal').style.display = 'flex';
+        }
 
-            if (!fileInput.files.length) {
-                status.innerText = "Please choose a file first!";
-                status.style.color = "#ef4444";
+        function saveCredentials() {
+            const cloud = document.getElementById('cloudName').value.trim();
+            const key = document.getElementById('apiKey').value.trim();
+            const preset = document.getElementById('uploadPreset').value.trim();
+
+            if (!cloud || !preset) {
+                alert('Please enter your Cloud Name and Unsigned Upload Preset name!');
+                return;
+            }
+            localStorage.setItem('cloudinary_cloud', cloud);
+            localStorage.setItem('cloudinary_key', key);
+            localStorage.setItem('cloudinary_preset', preset);
+            document.getElementById('apiModal').style.display = 'none';
+        }
+
+        async function handleFiles(files) {
+            const cloud = localStorage.getItem('cloudinary_cloud') || 'dmhwtzzqi';
+            const key = localStorage.getItem('cloudinary_key') || '388174674157577';
+            const preset = localStorage.getItem('cloudinary_preset');
+
+            if (!preset) {
+                openModal();
                 return;
             }
 
-            const file = fileInput.files[0];
-            status.innerText = "Uploading to Cloudinary...";
-            status.style.color = "#facc15";
+            const status = document.getElementById('status');
+            for (let file of files) {
+                status.innerText = `Uploading ${file.name}...`;
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', preset);
+                formData.append('api_key', key);
 
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', UPLOAD_PRESET);
-            formData.append('api_key', API_KEY);
-
-            try {
-                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    status.innerHTML = `Upload Complete! <br><a href="${data.secure_url}" target="_blank" style="color: #60a5fa;">View Direct Link</a>`;
-                    status.style.color = "#4ade80";
-                    if (data.resource_type === "image") {
-                        preview.src = data.secure_url;
-                        preview.style.display = "block";
+                try {
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/auto/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        saveFileLocally({
+                            name: file.name,
+                            url: data.secure_url,
+                            type: data.resource_type
+                        });
+                        status.innerText = 'Upload complete!';
+                    } else {
+                        status.innerText = 'Error: ' + (data.error?.message || 'Check your Upload Preset');
                     }
-                } else {
-                    status.innerText = "Error: " + (data.error ? data.error.message : "Upload failed");
-                    status.style.color = "#ef4444";
+                } catch (err) {
+                    status.innerText = 'Upload failed. Check connection.';
                 }
-            } catch (error) {
-                status.innerText = "Network Error: Could not connect to Cloudinary.";
-                status.style.color = "#ef4444";
             }
+            renderFiles();
+        }
+
+        function saveFileLocally(fileObj) {
+            const files = JSON.parse(localStorage.getItem('drive_files') || '[]');
+            files.unshift(fileObj);
+            localStorage.setItem('drive_files', JSON.stringify(files));
+        }
+
+        function renderFiles() {
+            const grid = document.getElementById('fileGrid');
+            const files = JSON.parse(localStorage.getItem('drive_files') || '[]');
+            grid.innerHTML = files.map(f => `
+                <div class="file-card">
+                    <div class="file-thumb">
+                        ${f.type === 'video' 
+                            ? `<video src="${f.url}" controls></video>` 
+                            : `<img src="${f.url}" alt="${f.name}">`}
+                    </div>
+                    <div class="file-info">
+                        <span class="file-name" title="${f.name}">${f.name}</span>
+                        <a class="file-link" href="${f.url}" target="_blank">Open</a>
+                    </div>
+                </div>
+            `).join('');
         }
     </script>
-
 </body>
 </html>
